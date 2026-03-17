@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遠見線上讀 - 讀一流書挑戰賽</title>
+    <style>
+        :root {
+            --gv-red: #e60012;
+            --gv-gold: #c5a059;
+            --gv-dark: #2c3e50;
+            --bg-gray: #f4f7f6;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            margin: 0;
+            background-color: var(--bg-gray);
+            display: flex;
+            height: 100vh;
+            color: #333;
+        }
+
+        /* 左側側欄 */
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            background: linear-gradient(135deg, var(--gv-dark), #4ca1af);
+            color: white;
+            text-align: center;
+        }
+
+        .level-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .founder-quote {
+            font-family: "STKaiti", "KaiTi", serif;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            letter-spacing: 1px;
+        }
+
+        .progress-section {
+            padding: 20px;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            background: #eee;
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: var(--gv-red);
+            height: 100%;
+            width: 83.3%; /* 模擬 5/6 狀態 */
+            transition: width 0.5s ease;
+        }
+
+        .salon-verify {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff9e6;
+            border-radius: 8px;
+            border: 1px solid #ffeeba;
+        }
+
+        .verify-input-group {
+            display: flex;
+            margin-top: 8px;
+            gap: 5px;
+        }
+
+        .verify-input {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .verify-btn {
+            background: var(--gv-dark);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 文章列表 */
+        .article-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .article-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f9f9f9;
+            cursor: pointer;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            margin-right: 15px;
+            accent-color: var(--gv-red);
+        }
+
+        /* 右側主畫面 */
+        .main-view {
+            flex: 1;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .demo-instruction {
+            max-width: 600px;
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        /* 最終兌換彈窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-card {
+            background: white;
+            width: 550px;
+            border-radius: 25px;
+            overflow: hidden;
+            animation: modalPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .reward-options {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .opt-card {
+            flex: 1;
+            border: 2px solid #eee;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .opt-card:hover, .opt-card.active {
+            border-color: var(--gv-red);
+            background: #fffafa;
+            transform: translateY(-5px);
+        }
+
+        .shipping-form {
+            display: none;
+            text-align: left;
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .btn-confirm {
+            background: var(--gv-red);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .completed-text {
+            color: #999;
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="level-badge">Lv.3 讀一流書</div>
+            <div class="founder-quote">「讀一流書，做一流人」</div>
+            <div style="font-size: 0.8rem; opacity: 0.9;">— 遠見創辦人 高希均</div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-label">
+                <span>連續 6 期挑戰進度</span>
+                <span><span id="periodCount">5</span> / 6 期</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="periodBar"></div>
+            </div>
+            
+            <div class="salon-verify">
+                <div style="font-size: 0.85rem; font-weight: bold;">🎙️ 季度空中沙龍</div>
+                <div id="salonStatus" style="font-size: 0.75rem; color: #856404;">狀態：尚未驗證</div>
+                <div class="verify-input-group">
+                    <input type="text" id="salonCode" class="verify-input" placeholder="輸入成就碼">
+                    <button class="verify-btn" onclick="verifySalon()">驗證</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 15px 20px; font-size: 0.85rem; background: #fafafa; border-bottom: 1px solid #eee;">
+            <b>本期閱讀清單 (第 6 期)</b>
+        </div>
+        
+        <div class="article-list">
+            <div class="article-item">
+                <input type="checkbox" class="checkbox" onchange="checkArticle(this)">
+                <span>【封面故事】台灣能養成大谷翔平？取法日本職棒，球員經三階段育才變職人</span>
+            </div>
+            <div class="article-item">
+                <input type="checkbox" class="checkbox" onchange="checkArticle(this)">
+                <span>【特別企劃】中國房地產崩退、青年失業率16%，十五五能解救內需危機嗎？</span>
+            </div>
+            <div class="article-item">
+                <input type="checkbox" class="checkbox" onchange="checkArticle(this)">
+                <span>【編者的話】台灣國球，更好的樣子</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-view">
+        <div class="demo-instruction">
+            <h2 style="color: var(--gv-red);">遠見挑戰賽 Demo 操作指南</h2>
+            <p>1. 本 Demo 預設您已連續閱讀 5 期。</p>
+            <p>2. <b>第一步：</b>輸入空中沙龍成就碼 <code>GVM888</code> 並點擊驗證。</p>
+            <p>3. <b>第二步：</b>勾選左側本期所有文章（共 3 篇）。</p>
+            <p>4. 達成「讀一流書」成就，進入最終獎勵領取流程！</p>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="rewardModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div style="font-size: 3rem;">🏆</div>
+                <h2 style="margin: 10px 0;">讀一流書，做一流人</h2>
+                <p>恭喜達成起訂後全新 6 期完讀挑戰！</p>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; font-weight: bold;">請選擇您的專屬榮譽獎勵：</p>
+                <div class="reward-options">
+                    <div class="opt-card" id="optBook" onclick="selectType('book')">
+                        <div style="font-size: 2rem;">📚</div>
+                        <h4>好書 5 選 1</h4>
+                        <p style="font-size: 0.75rem; color: #666;">實體書寄送 (免運費)</p>
+                    </div>
+                    <div class="opt-card" id="optExtend" onclick="selectType('extend')">
+                        <div style="font-size: 2rem;">⏳</div>
+                        <h4>線上讀展延</h4>
+                        <p style="font-size: 0.75rem; color: #666;">效期自動增加 1 個月</p>
+                    </div>
+                </div>
+
+                <div id="bookForm" class="shipping-form">
+                    <label style="font-size: 0.85rem; font-weight: bold;">選擇您想閱讀的一流好書：</label>
+                    <select class="form-input">
+                        <option>《贏在表達》- 本季精選</option>
+                        <option>《與成功有約》</option>
+                        <option>《黃仁勳傳》</option>
+                        <option>《人際關係的思維槓桿》</option>
+                        <option>《命定之書》</option>
+                    </select>
+                    <input type="text" class="form-input" placeholder="收件人姓名">
+                    <input type="text" class="form-input" placeholder="聯絡電話">
+                    <input type="text" class="form-input" placeholder="收件地址">
+                </div>
+
+                <div id="extendMsg" style="display:none; text-align: center; color: #2c3e50; background: #eef7f9; padding: 15px; border-radius: 10px;">
+                    💡 系統將自動帶入您的帳號，並將訂閱效期延長 30 天。
+                </div>
+
+                <button class="btn-confirm" onclick="handleFinalSubmit()">確認領取，做一流人</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let salonVerified = false;
+        let articlesRead = 0;
+        let selectedReward = '';
+
+        // 1. 驗證沙龍代碼
+        function verifySalon() {
+            const code = document.getElementById('salonCode').value;
+            if(code === "GVM888") {
+                salonVerified = true;
+                document.getElementById('salonStatus').innerText = "狀態：✅ 已驗證 (Q1沙龍)";
+                document.getElementById('salonStatus').style.color = "green";
+                alert("空中沙龍驗證成功！");
+                checkTotalAchievement();
+            } else {
+                alert("代碼錯誤，請輸入 GVM888");
+            }
+        }
+
+        // 2. 勾選文章
+        function checkArticle(el) {
+            if(el.checked) {
+                el.nextElementSibling.classList.add('completed-text');
+                articlesRead++;
+            } else {
+                el.nextElementSibling.classList.remove('completed-text');
+                articlesRead--;
+            }
+            checkTotalAchievement();
+        }
+
+        // 3. 檢查是否達成 6 期總挑戰
+        function checkTotalAchievement() {
+            if(salonVerified && articlesRead === 3) {
+                // 更新側欄進度條到 100%
+                document.getElementById('periodBar').style.width = "100%";
+                document.getElementById('periodCount').innerText = "6";
+                
+                // 延遲彈出獎勵視窗
+                setTimeout(() => {
+                    document.getElementById('rewardModal').style.display = 'flex';
+                }, 800);
+            }
+        }
+
+        // 4. 選擇獎勵類型
+        function selectType(type) {
+            selectedReward = type;
+            document.getElementById('optBook').classList.remove('active');
+            document.getElementById('optExtend').classList.remove('active');
+            document.getElementById('bookForm').style.display = 'none';
+            document.getElementById('extendMsg').style.display = 'none';
+
+            if(type === 'book') {
+                document.getElementById('optBook').classList.add('active');
+                document.getElementById('bookForm').style.display = 'block';
+            } else {
+                document.getElementById('optExtend').classList.add('active');
+                document.getElementById('extendMsg').style.display = 'block';
+            }
+        }
+
+        // 5. 最終提交
+        function handleFinalSubmit() {
+            if(!selectedReward) {
+                alert("請選擇獎勵！");
+                return;
+            }
+
+            if(selectedReward === 'book') {
+                alert("【系統自動帶入兌換碼：GVM-BOOK-FREE】\n申請已送出！我們將於下週為您寄出「一流好書」。");
+            } else {
+                alert("【交易管理更新】\n效期已自動延展一個月。\n新到期日：2027/01/31");
+            }
+            
+            document.getElementById('rewardModal').style.display = 'none';
+            alert("恭喜您完成本季挑戰，繼續朝「做一流人」邁進！");
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>
